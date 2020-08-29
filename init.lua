@@ -37,3 +37,16 @@ local metric_layout_create_calls = monitoring.counter(
 digtron.execute_move_cycle = metric_move_cycle.wrap(digtron.execute_move_cycle)
 digtron.execute_dig_cycle = metric_dig_cycle.wrap( metric_dig_cycle_time.wraptime(digtron.execute_dig_cycle) )
 DigtronLayout.create = metric_layout_create_calls.wrap( metric_layout_create_time.wraptime(DigtronLayout.create) )
+
+local metric_serialize_bytes = monitoring.counter(
+	"digtron_serialize_bytes",
+	"total serialized bytes from DigtronLayout.serialize"
+)
+
+
+local old_serialize = DigtronLayout.serialize
+DigtronLayout.serialize = function(self)
+	local data = old_serialize(self)
+	metric_serialize_bytes.inc(#data)
+	return data
+end
